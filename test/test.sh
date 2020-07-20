@@ -62,7 +62,8 @@ check escript_with_module_ok.escript code 0 w/ ""
 check escript_no_main.escript code 0 w/ ""
 
 check script_ok.script code 0 w/ ""
-check script_error.script code 1 w/ "{unbound_var,'ExtraDeps'}"
+check script_error.script code 1 w/ "script_error.script:4: syntax error before: _"
+#check script_error.script code 1 w/ "{unbound_var,'ExtraDeps'}"
 
 check terms_ok.config code 0 w/ ""
 check terms_error.config code 1 w/ "terms_error.config:10: syntax error before: '{'"

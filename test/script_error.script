@@ -1,6 +1,6 @@
 case os:getenv("REBAR_EXTRA_DEPS") of
     false ->
-        CONFIG;
+        CONFIG  % missing semicolon
     _ ->
         case lists:keysearch(deps, 1, CONFIG) of
             {value, {deps, Deps}} ->
