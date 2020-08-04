@@ -97,7 +97,7 @@ include_dirs(AbsFileName, AppDir, ProjectDir) ->
     IncludeDir = filename:join(AppDir, "include"),
     BuildDepsDir = filename:join(ProjectDir, "deps"),
     DepsDirs = [ filename:join(ProjectDir, Dir) || Dir <- ?REBAR3DEPSDIRS ],
-    [SrcDir, IncludeDir, BuildDepsDir | DepsDirs].
+    [SrcDir, IncludeDir, AppDir, BuildDepsDir | DepsDirs].
 
 -spec add_deps_paths(Dir::[file:name()]) -> ok.
 add_deps_paths(Dirs) ->
