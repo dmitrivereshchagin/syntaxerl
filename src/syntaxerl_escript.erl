@@ -4,7 +4,7 @@
 -behaviour(syntaxerl).
 
 -export([
-    check_syntax/3,
+    check_syntax/4,
     output_error/1,
     output_warning/1
 ]).
@@ -15,7 +15,7 @@
 %% API
 %% ===================================================================
 
-check_syntax(FileName, BaseFileName, Debug) ->
+check_syntax(FileName, BaseFileName, Columns, Debug) ->
     case file:read_file(FileName) of
         {ok, Content} ->
             Preface = <<"-module(fixed_escript).\n-export([main/1]).\n">>,
@@ -28,7 +28,8 @@ check_syntax(FileName, BaseFileName, Debug) ->
             NewFileName = filename:rootname(FileName, ".erl") ++ "_fixed.erl",
             case file:write_file(NewFileName, NewContent) of
                 ok ->
-                    {InclDirs, DepsDirs, ErlcOpts} = syntaxerl_utils:incls_deps_opts(BaseFileName),
+                    {InclDirs, DepsDirs, ErlcOpts} =
+                        syntaxerl_utils:incls_deps_opts(BaseFileName, Columns),
                     syntaxerl_logger:debug(Debug, "Include dirs: ~p", [InclDirs]),
                     syntaxerl_logger:debug(Debug, "Deps dirs: ~p", [DepsDirs]),
                     syntaxerl_logger:debug(Debug, "Erlc opts: ~p", [ErlcOpts]),

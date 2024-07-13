@@ -4,7 +4,9 @@
     {registered, []},
     {applications, [
         kernel,
-        stdlib
+        stdlib,
+        compiler,
+        parsetools
     ]},
     {env, []},
     {handler_patterns, [

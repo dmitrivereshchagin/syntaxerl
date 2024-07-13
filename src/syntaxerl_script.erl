@@ -4,7 +4,7 @@
 -behaviour(syntaxerl).
 
 -export([
-    check_syntax/3,
+    check_syntax/4,
     output_error/1,
     output_warning/1
 ]).
@@ -15,7 +15,7 @@
 %% API
 %% ===================================================================
 
-check_syntax(FileName, _BaseFileName, _Debug) ->
+check_syntax(FileName, _BaseFileName, _Columns, _Debug) ->  % FIXME
     case file:open(FileName, [read]) of
         {ok, Fd} ->
             R = check_syntax(Fd),

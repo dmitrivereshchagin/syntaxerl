@@ -8,7 +8,10 @@
 ]).
 
 -include("issues_spec.hrl").
--callback check_syntax(FileName::file:filename(), BaseFileName::file:filename(), Debug::boolean()) ->
+-callback check_syntax(FileName::file:filename(),
+                       BaseFileName::file:filename(),
+                       Columns::boolean(),
+                       Debug::boolean()) ->
     {ok, [warning() | error()]} | {error, [error()]}.
 -callback output_error(ErrorInfo::error_info()) -> boolean().
 -callback output_warning(ErrorInfo::error_info()) -> boolean().
@@ -24,6 +27,7 @@
 -record(opts, {
     filename :: file:filename() | undefined,
     base :: file:filename() | undefined,
+    columns = false :: boolean(),
     debug = false :: boolean()
 }).
 
@@ -31,8 +35,9 @@
 -spec main([string()]) -> no_return().
 main(Args) ->
     Opts = parse_args(Args, #opts{}),
-    #opts{filename = FileName, base = BaseFileName, debug = Debug} = Opts,
-    check_syntax(FileName, BaseFileName, Debug).
+    #opts{filename = FileName, base = BaseFileName,
+          columns = Columns, debug = Debug} = Opts,
+    check_syntax(FileName, BaseFileName, Columns, Debug).
 
 parse_args([], #opts{filename=undefined}) ->
     usage(?EXIT_FAILURE);
@@ -40,6 +45,8 @@ parse_args([], Opts = #opts{base=undefined, filename=FileName}) ->
     Opts#opts{base=FileName};
 parse_args([], Opts) ->
     Opts;
+parse_args([C | Args], Opts) when C =:= "-c"; C =:= "--columns" ->
+    parse_args(Args, Opts#opts{columns=true});
 parse_args([D | Args], Opts) when D =:= "-d"; D =:= "--debug" ->
     parse_args(Args, Opts#opts{debug=true});
 parse_args([H | _Args], _Opts) when H =:= "-h"; H =:= "--help" ->
@@ -62,14 +69,14 @@ parse_args(_Args, _Opts) ->
 %% Internal
 %% ===================================================================
 
--spec check_syntax(string(), string(), boolean()) -> exit_code().
-check_syntax(FileName, BaseFileName, Debug) ->
+-spec check_syntax(string(), string(), boolean(), boolean()) -> exit_code().
+check_syntax(FileName, BaseFileName, Columns, Debug) ->
     ScriptName = escript:script_name(),
     HandlerPatterns = handler_patterns(ScriptName),
     syntaxerl_logger:debug(Debug, "Handler patterns: ~p", [HandlerPatterns]),
     Handler = choose_handler(FileName, HandlerPatterns),
     syntaxerl_logger:debug(Debug, "Selected handler: ~p", [Handler]),
-    case Handler:check_syntax(FileName, BaseFileName, Debug) of
+    case Handler:check_syntax(FileName, BaseFileName, Columns, Debug) of
         {ok, Issues} ->
             syntaxerl_utils:print_issues(FileName, Issues),
             halt(?EXIT_SUCCESS);
@@ -91,6 +98,7 @@ usage(ExitCode) ->
     io:format("Usage: ~s [-b | --base <FILENAME>] [-d | --debug] <FILENAME>~n", [BaseName]),
     io:format("       ~s <-h | --help>~n", [BaseName]),
     io:format("  -b, --base     Set original filename~n"),
+    io:format("  -c, --columns  ...~n"),  % FIXME
     io:format("  -d, --debug    Enable debug output~n"),
     io:format("  -h, --help     Show this message~n"),
     halt(ExitCode).

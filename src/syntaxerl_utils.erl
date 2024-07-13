@@ -2,7 +2,7 @@
 -author("Dmitry Klionsky <dm.klionsky@gmail.com>").
 
 -export([
-    incls_deps_opts/1,
+    incls_deps_opts/2,
     print_issues/2,
     consult_file/1
 ]).
@@ -21,18 +21,19 @@
 %% API
 %% ===================================================================
 
--spec incls_deps_opts(FileName::file:filename()) ->
+-spec incls_deps_opts(FileName::file:filename(), Columns::boolean()) ->
     {InclDirs::[file:name()], EbinDirs::[file:name()], ErlcOpts::[term()]}.
-incls_deps_opts(FileName) ->
+incls_deps_opts(FileName, Columns) ->
     AbsFileName = filename:absname(FileName),
     AppDir = appdir(AbsFileName),
     ProjectDir = projectdir(AppDir),
     StdOtpDirs = include_dirs(AbsFileName, AppDir, ProjectDir),
     StdErlcOpts = [
+        %% FIXME
         %% Since OTP 24 compiler warnings and errors include column numbers in
         %% addition to line numbers by default.  We are not ready for this yet.
         %% The following option is ignored by older OTP releases.
-        {error_location, line},
+        {error_location, if Columns -> column; true -> line end},
 
         strong_validation,
 
@@ -145,10 +146,14 @@ print_issues(FileName, [Issue | Issues]) ->
     print_issue(FileName, Issue),
     print_issues(FileName, Issues).
 
+print_issue(FileName, {warning, {Line, Column}, Description}) ->
+    io:format("~s:~p:~p: warning: ~s~n", [FileName, Line, Column, Description]);
 print_issue(FileName, {warning, Line, Description}) ->
     io:format("~s:~p: warning: ~s~n", [FileName, Line, Description]);
 print_issue(FileName, {error, Description}) ->
     io:format("~s:~s~n", [FileName, Description]);
+print_issue(FileName, {error, {Line, Column}, Description}) ->
+    io:format("~s:~p:~p: ~s~n", [FileName, Line, Column, Description]);
 print_issue(FileName, {error, Line, Description}) ->
     io:format("~s:~p: ~s~n", [FileName, Line, Description]).
 

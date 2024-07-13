@@ -1,9 +1,11 @@
 -ifndef(issues_spec_hrl).
 -define(issues_spec_hrl, included).
 
--type warning() :: {warning, Line::pos_integer(), Description::string()}.
+-type location() :: {Line::pos_integer(), Column::pos_integer()} |
+                    Line::pos_integer().
+-type warning() :: {warning, location(), Description::string()}.
 -type error() :: {error, Description::string()} |
-                 {error, Line::pos_integer(), Description::string()}.
+                 {error, location(), Description::string()}.
 
 -type issue() :: warning() | error().
 
