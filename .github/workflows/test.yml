@@ -1,0 +1,27 @@
+---
+name: test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp-version:
+          - '18'
+          - '19'
+          - '20'
+          - '21'
+          - '22'
+          - '23'
+          - '24'
+          - '25'
+          - '26'
+          - '27'
+    container: erlang:${{ matrix.otp-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: make
+      - run: make dialyze
+      - run: make test
